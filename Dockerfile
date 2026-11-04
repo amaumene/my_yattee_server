@@ -39,6 +39,7 @@ ENV DENO_INSTALL="/root/.deno"
 ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 
 # Install Python dependencies
+RUN sed -i -E '/^[[:space:]]*($|#)/!s/[<>=!~].*$//' requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt --upgrade
 
 # Git version for /info endpoint (passed during build)
