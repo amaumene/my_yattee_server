@@ -1,11 +1,31 @@
+# Build the bgutil POT provider server (needs node >= 22; final image ships the
+# node binary from this stage). Version must match the pip plugin pin in
+# requirements.txt (bgutil-ytdlp-pot-provider).
+FROM node:bookworm-slim AS pot-final
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates
+
+RUN mkdir -p /build \
+    && git clone https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git /build \
+    && cd /build/server \
+    && npm ci --no-audit --no-fund \
+    && npx tsc \
+    && test -f build/main.js \
+    && npm ci --omit=dev --no-audit --no-fund \
+    && mkdir -p /opt/bgutil-pot-provider/bin \
+    && cp -r build node_modules package.json /opt/bgutil-pot-provider/ \
+    && cp /usr/local/bin/node /opt/bgutil-pot-provider/bin/node
+
 FROM python:3.12-slim
 
+COPY --from=pot-final /opt/bgutil-pot-provider /opt/bgutil-pot-provider
 
 # Install system dependencies including deno for yt-dlp JS challenge solving
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
     unzip \
+    nodejs \
+    npm \
     git \
     && curl -fsSL https://deno.land/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*

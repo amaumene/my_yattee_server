@@ -1,4 +1,5 @@
 #!/bin/sh
+sleep 5
 echo "replacing nameservers"
 echo "nameserver ${NS_1}" > /etc/resolv.conf
 echo "nameserver ${NS_2}" >> /etc/resolv.conf
